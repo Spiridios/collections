@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
 
   <name>collections</name>
-  <url>http://github.com/spiridios</url>
+  <url>http://github.com/spiridios/collections</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
