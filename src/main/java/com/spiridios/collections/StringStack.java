@@ -62,6 +62,9 @@ public class StringStack implements Collection<String>, Serializable {
 			if (currentElementIndexIndex <= 0) {
 				throw new NoSuchElementException();
 			}
+			if (modificationCount != expectedModificationCount) {
+				throw new ConcurrentModificationException();
+			}
 
 			nextCalled = true;
 			currentElementIndexIndex--;
@@ -244,7 +247,7 @@ public class StringStack implements Collection<String>, Serializable {
 	public void clear() {
 		elementBuffer = new StringBuilder();
 		elementIndices = new ArrayList<Integer>();
-		modificationCount = 0;
+		modificationCount++;
 	}
 
 	public String push(String e) {
@@ -286,6 +289,12 @@ public class StringStack implements Collection<String>, Serializable {
 		}
 	}
 
+	@Override
+	public String toString() {
+		// This creates a new string each time. Might be worth caching it.
+		return elementBuffer.toString();
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

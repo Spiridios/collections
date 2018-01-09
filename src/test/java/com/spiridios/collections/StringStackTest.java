@@ -48,12 +48,23 @@ public class StringStackTest {
 
 		@Test
 		public void testPeekPop() {
-			StringStack ss = new StringStack();
+			StringStack ss = new StringStack(Arrays.asList("a", "b", null, "", "c"));
+			assertThat(ss.peek(), is("c"));
+			assertThat(ss.pop(), is("c"));
+			assertThat(ss.peek(), is(""));
+			assertThat(ss.pop(), is(""));
+			assertThat(ss.peek(), is(nullValue()));
+			assertThat(ss.pop(), is(nullValue()));
+			assertThat(ss.peek(), is("b"));
+			assertThat(ss.pop(), is("b"));
+			assertThat(ss.peek(), is("a"));
+			assertThat(ss.pop(), is("a"));
 		}
 		
 		@Test
 		public void testToString() {
-			StringStack ss = new StringStack();
+			StringStack ss = new StringStack(Arrays.asList("a", "b", null, "", "c"));
+			assertThat(ss.toString(), is("abc"));
 		}
 		
 		@SuppressWarnings("unlikely-arg-type")
@@ -88,8 +99,6 @@ public class StringStackTest {
 
 		// Push null - can push empty and null strings and pop them back off
 
-		// Test serialization
-
 		// Should create performance tests comparing to Deque<String>
 
 	}
@@ -121,6 +130,8 @@ public class StringStackTest {
 					CollectionFeature.KNOWN_ORDER,
 					CollectionFeature.NON_STANDARD_TOSTRING,
 					CollectionFeature.GENERAL_PURPOSE,
+					CollectionFeature.SERIALIZABLE,
+					CollectionFeature.FAILS_FAST_ON_CONCURRENT_MODIFICATION,
 					CollectionSize.ANY
 					).named("StringStack collection tests").createTestSuite();
 		}
