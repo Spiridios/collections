@@ -22,17 +22,28 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-// TODO: concurrentModdificationException, clone?
-public class StringStack implements Collection<String>, Serializable, Cloneable {
+// TODO: ConcurrentModdificationException
+public class StringStack implements Collection<String>, Serializable {
 	private static final long serialVersionUID = -6797711532702199014L;
+
+	/**
+	 * Count of modifications made to this Stack (for ConcurrentModdificationException purposes)
+	 */
 	private transient int modificationCount = 0;
-	private StringBuffer elementBuffer;
+	
+	/**
+	 * The string data of the string elements in this stack.
+	 */
+	private StringBuilder elementBuffer;
 
 	/**
 	 * Index of the start of the string, null if the string's value is null.
 	 */
 	private ArrayList<Integer> elementIndices;
 
+	/**
+	 * Returns elements in LIFO (stack) order. Repeatedly calling next() gives an equivalent order as if repeatedly calling pop();
+	 */
 	private class StringStackIterator implements Iterator<String> {
 		private int currentElementIndexIndex;
 		private int expectedModificationCount;
@@ -107,6 +118,16 @@ public class StringStack implements Collection<String>, Serializable, Cloneable 
 	public StringStack() {
 		clear();
 	}
+	
+	public StringStack(StringStack ss) {
+		this.elementIndices = new ArrayList<Integer>(ss.elementIndices);
+		this.elementBuffer = new StringBuilder(ss.elementBuffer);
+	}
+	
+	public StringStack(Collection<? extends String> c) {
+		this();
+		addAll(c);
+	}
 
 	public int size() {
 		return elementIndices.size();
@@ -126,15 +147,23 @@ public class StringStack implements Collection<String>, Serializable, Cloneable 
 		return false;
 	}
 
+	// TODO: Also provide FIFO ordered iterator?
+	/**
+	 * Returns items in LIFO order. The order is the same as repeatedly calling pop(), but the StringStack is not modified.
+	 */
 	public Iterator<String> iterator() {
 		return new StringStackIterator();
 	}
 
-	// TODO: Contract order
 	public Object[] toArray() {
 		return toArray(new Object[size()]);
 	}
 
+	// TODO: Need to decide contract order
+	// String order: element[0] == First push, element[1] == second push, element[n] == last push
+	// E.G. iterating through array should give the toString() of the stack
+	// Stack order (as implemented): iterating the Array gives the iteration order of the stack
+	// which is the same as if repeatedly calling pop()
 	@SuppressWarnings("unchecked")
 	public <T> T[] toArray(T[] a) {
 		T[] array = a;
@@ -213,7 +242,7 @@ public class StringStack implements Collection<String>, Serializable, Cloneable 
 	}
 
 	public void clear() {
-		elementBuffer = new StringBuffer();
+		elementBuffer = new StringBuilder();
 		elementIndices = new ArrayList<Integer>();
 		modificationCount = 0;
 	}
@@ -223,7 +252,9 @@ public class StringStack implements Collection<String>, Serializable, Cloneable 
 			elementIndices.add(elementBuffer.length());
 			elementBuffer.append(e);
 		} else {
-			// throw new IllegalArgumentException("Null strings are not supported");
+			// TODO: Null strings in the stack don't make a huge amount of sense.
+			// Make a subclass, NullableStringStack that allows nulls
+			// and throw new IllegalArgumentException("Null strings are not supported"); here
 			elementIndices.add(null);
 		}
 		modificationCount++;

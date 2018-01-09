@@ -64,20 +64,32 @@ public class StringStackTest {
 		}
 		
 		@Test
-		public void testAddAllNull() {
-			StringStack ss = new StringStack();
-			ss.addAll(Arrays.asList("A","B", null, "C"));
+		public void testCopyConstructor() {
+			StringStack orig = new StringStack();
+			orig.push("a");
+			orig.push("b");
+			orig.push("c");
+			orig.push("d");
 			
-			Iterator<String> itr = ss.iterator();
-			assertThat(itr.next(), is("C"));
-			assertThat(itr.next(), is((String)null));
-			assertThat(itr.next(), is("B"));
-			assertThat(itr.next(), is("A"));
+			StringStack copy = new StringStack(orig);
+			
+			Iterator<String> origItr = orig.iterator();
+			Iterator<String> copyItr = copy.iterator();
+			while (origItr.hasNext() && copyItr.hasNext()) {
+				assertThat(copyItr.next(), is(origItr.next()));
+			}
+			
+			while (!orig.isEmpty()) {
+				String origStr = orig.pop();
+				String copyStr = copy.pop();
+				assertThat(origStr, is(copyStr));
+			}
 		}
 
 		// Push null - can push empty and null strings and pop them back off
-		//
-		
+
+		// Test serialization
+
 		// Should create performance tests comparing to Deque<String>
 
 	}
