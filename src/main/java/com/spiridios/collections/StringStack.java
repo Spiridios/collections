@@ -22,7 +22,6 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-// TODO: ConcurrentModdificationException
 public class StringStack implements Collection<String>, Serializable {
 	private static final long serialVersionUID = -6797711532702199014L;
 
