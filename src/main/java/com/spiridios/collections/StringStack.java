@@ -342,12 +342,7 @@ public class StringStack implements Collection<String>, Serializable {
 	public Object[] toArray() {
 		return toArray(new Object[size()]);
 	}
-	
-	// TODO: Need to decide contract order
-	// String order: element[0] == First push, element[1] == second push, element[n] == last push
-	// E.G. iterating through array should give the toString() of the stack
-	// Stack order (as implemented): iterating the Array gives the iteration order of the stack
-	// which is the same as if repeatedly calling pop()
+
 	@SuppressWarnings("unchecked")
 	public <T> T[] toArray(T[] a) {
 		T[] array = a;
