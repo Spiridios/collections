@@ -97,10 +97,7 @@ public class StringStackTest {
 			}
 		}
 
-		// Push null - can push empty and null strings and pop them back off
-
 		// Should create performance tests comparing to Deque<String>
-
 	}
 
 	public static class GuavaTests {

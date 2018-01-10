@@ -28,25 +28,6 @@ import java.util.NoSuchElementException;
  * @author Micah Lieske
  */
 public class StringStack implements Collection<String>, Serializable {
-	private static final long serialVersionUID = -6797711532702199014L;
-	// TODO: Nulls allowed vs not allowed
-	// TODO: Element separator
-
-	/**
-	 * Count of modifications made to this Stack (for ConcurrentModdificationException purposes)
-	 */
-	private transient int modificationCount = 0;
-	
-	/**
-	 * The string data of the string elements in this stack.
-	 */
-	private StringBuilder elementBuffer;
-
-	/**
-	 * Index of the start of the string, null if the string's value is null.
-	 */
-	private ArrayList<Integer> elementIndices;
-
 	/**
 	 * Returns elements in LIFO (stack) order. Repeatedly calling next() gives an equivalent order as if repeatedly calling pop();
 	 */
@@ -58,6 +39,17 @@ public class StringStack implements Collection<String>, Serializable {
 		private LIFOIterator() {
 			this.expectedModificationCount = modificationCount;
 			this.currentElementIndexIndex = elementIndices.size();
+		}
+
+		private Integer getEndIndex() {
+			Integer endIdx = null;
+			for (int i = currentElementIndexIndex + 1; i < elementIndices.size(); i++) {
+				endIdx = elementIndices.get(i);
+				if (endIdx != null) {
+					return endIdx;
+				}
+			}
+			return elementBuffer.length();
 		}
 
 		public boolean hasNext() {
@@ -111,33 +103,32 @@ public class StringStack implements Collection<String>, Serializable {
 				}
 			}
 		}
-
-		private Integer getEndIndex() {
-			Integer endIdx = null;
-			for (int i = currentElementIndexIndex + 1; i < elementIndices.size(); i++) {
-				endIdx = elementIndices.get(i);
-				if (endIdx != null) {
-					return endIdx;
-				}
-			}
-			return elementBuffer.length();
-		}
 	}
+
+	private static final long serialVersionUID = -6797711532702199014L;
+	// TODO: Nulls allowed vs not allowed
+	// TODO: Element separator
+	
+	/**
+	 * Count of modifications made to this Stack (for ConcurrentModdificationException purposes)
+	 */
+	private transient int modificationCount = 0;
+
+	/**
+	 * The string data of the string elements in this stack.
+	 */
+	private StringBuilder elementBuffer;
+
+	/**
+	 * Index of the start of the string, null if the string's value is null.
+	 */
+	private ArrayList<Integer> elementIndices;
 
 	/**
 	 * Constructs and empty StringStack
 	 */
 	public StringStack() {
 		clear();
-	}
-	
-	/**
-	 * Constructs a new StringStack that is a deep copy of the given StringStack
-	 * @param toCopy The StringStack to copy
-	 */
-	public StringStack(StringStack toCopy) {
-		this.elementIndices = new ArrayList<Integer>(toCopy.elementIndices);
-		this.elementBuffer = new StringBuilder(toCopy.elementBuffer);
 	}
 	
 	/**
@@ -149,62 +140,14 @@ public class StringStack implements Collection<String>, Serializable {
 		this();
 		addAll(collection);
 	}
-
+	
 	/**
-	 * {@inheritDoc}
+	 * Constructs a new StringStack that is a deep copy of the given StringStack
+	 * @param toCopy The StringStack to copy
 	 */
-	public int size() {
-		return elementIndices.size();
-	}
-
-	public boolean isEmpty() {
-		return elementIndices.isEmpty();
-	}
-
-	public boolean contains(Object o) {
-		String eToFind = (String) o; // will throw classcast if o is not string
-		for (String e : this) {
-			if ((e == null && o == null) || (e != null && e.equals(eToFind))) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns items in LIFO order. The order is the same as repeatedly calling pop(), but the StringStack is not modified.
-	 */
-	public Iterator<String> iterator() {
-		return new LIFOIterator();
-	}
-
-	public Object[] toArray() {
-		return toArray(new Object[size()]);
-	}
-
-	// TODO: Need to decide contract order
-	// String order: element[0] == First push, element[1] == second push, element[n] == last push
-	// E.G. iterating through array should give the toString() of the stack
-	// Stack order (as implemented): iterating the Array gives the iteration order of the stack
-	// which is the same as if repeatedly calling pop()
-	@SuppressWarnings("unchecked")
-	public <T> T[] toArray(T[] a) {
-		T[] array = a;
-		if (array.length < this.size()) {
-			array = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size());
-		}
-
-		int idx = 0;
-		for (String string : this) {
-			array[idx] = (T) string;
-			idx++;
-		}
-
-		if (array.length > this.size()) {
-			array[size()] = null;
-		}
-
-		return array;
+	public StringStack(StringStack toCopy) {
+		this.elementIndices = new ArrayList<Integer>(toCopy.elementIndices);
+		this.elementBuffer = new StringBuilder(toCopy.elementBuffer);
 	}
 
 	public boolean add(String e) {
@@ -212,11 +155,24 @@ public class StringStack implements Collection<String>, Serializable {
 		return true;
 	}
 
-	public boolean remove(Object o) {
-		for (Iterator<String> itr = this.iterator(); itr.hasNext(); ) {
-			String s = itr.next();
-			if ((s == null && o == null) || (s != null && s.equals(o))) {
-				itr.remove();
+	public boolean addAll(Collection<? extends String> c) {
+		boolean changed = false;
+		for (String e : c) {
+			changed |= add(e);
+		}
+		return changed;
+	}
+
+	public void clear() {
+		elementBuffer = new StringBuilder();
+		elementIndices = new ArrayList<Integer>();
+		modificationCount++;
+	}
+
+	public boolean contains(Object o) {
+		String eToFind = (String) o; // will throw classcast if o is not string
+		for (String e : this) {
+			if ((e == null && o == null) || (e != null && e.equals(eToFind))) {
 				return true;
 			}
 		}
@@ -234,94 +190,6 @@ public class StringStack implements Collection<String>, Serializable {
 			}
 		}
 		return true;
-	}
-
-	public boolean addAll(Collection<? extends String> c) {
-		boolean changed = false;
-		for (String e : c) {
-			changed |= add(e);
-		}
-		return changed;
-	}
-
-	public boolean removeAll(Collection<?> c) {
-		boolean changed = false;
-		for (Object o : c) {
-			changed |= remove(o);
-		}
-		return changed;
-	}
-
-	public boolean retainAll(Collection<?> c) {
-		boolean changed = false;
-		for (Iterator<String> itr = this.iterator(); itr.hasNext(); ) {
-			String s = itr.next();
-			if (!c.contains(s)) {
-				itr.remove();
-				changed = true;
-			}
-		}
-		return changed;
-	}
-
-	public void clear() {
-		elementBuffer = new StringBuilder();
-		elementIndices = new ArrayList<Integer>();
-		modificationCount++;
-	}
-
-	public String push(String e) {
-		if (e != null) {
-			elementIndices.add(elementBuffer.length());
-			elementBuffer.append(e);
-		} else {
-			// TODO: Null strings in the stack don't make a huge amount of sense.
-			// Make a subclass, NullableStringStack that allows nulls
-			// and throw new IllegalArgumentException("Null strings are not supported"); here
-			elementIndices.add(null);
-		}
-		modificationCount++;
-		return e;
-	}
-
-	public String peek() {
-		if (isEmpty()) {
-			throw new NoSuchElementException(getClass().getName() + " is empty");
-		}
-
-		Integer index = elementIndices.get(elementIndices.size() - 1);
-		return index == null ? null : elementBuffer.substring(index);
-	}
-
-	public String pop() throws NoSuchElementException {
-		if (isEmpty()) {
-			throw new NoSuchElementException(getClass().getName() + " is empty");
-		}
-
-		modificationCount++;
-		Integer index = elementIndices.remove(elementIndices.size() - 1);
-		if (index == null) {
-			return null;
-		} else {
-			String value = elementBuffer.substring(index);
-			elementBuffer.delete(index, elementBuffer.length());
-			return value;
-		}
-	}
-
-	@Override
-	public String toString() {
-		// This creates a new string each time. Might be worth caching it.
-		return elementBuffer.toString();
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((elementBuffer == null) ? 0 : elementBuffer.toString().hashCode());
-		result = prime * result + ((elementIndices == null) ? 0 : elementIndices.hashCode());
-		return result;
 	}
 
 	@Override
@@ -351,6 +219,138 @@ public class StringStack implements Collection<String>, Serializable {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((elementBuffer == null) ? 0 : elementBuffer.toString().hashCode());
+		result = prime * result + ((elementIndices == null) ? 0 : elementIndices.hashCode());
+		return result;
+	}
+
+	public boolean isEmpty() {
+		return elementIndices.isEmpty();
+	}
+
+	/**
+	 * Returns items in LIFO order. The order is the same as repeatedly calling pop(), but the StringStack is not modified.
+	 */
+	public Iterator<String> iterator() {
+		return new LIFOIterator();
+	}
+
+	public String peek() {
+		if (isEmpty()) {
+			throw new NoSuchElementException(getClass().getName() + " is empty");
+		}
+
+		Integer index = elementIndices.get(elementIndices.size() - 1);
+		return index == null ? null : elementBuffer.substring(index);
+	}
+
+	public String pop() throws NoSuchElementException {
+		if (isEmpty()) {
+			throw new NoSuchElementException(getClass().getName() + " is empty");
+		}
+
+		modificationCount++;
+		Integer index = elementIndices.remove(elementIndices.size() - 1);
+		if (index == null) {
+			return null;
+		} else {
+			String value = elementBuffer.substring(index);
+			elementBuffer.delete(index, elementBuffer.length());
+			return value;
+		}
+	}
+
+	public String push(String e) {
+		if (e != null) {
+			elementIndices.add(elementBuffer.length());
+			elementBuffer.append(e);
+		} else {
+			// TODO: Null strings in the stack don't make a huge amount of sense.
+			// Make a subclass, NullableStringStack that allows nulls
+			// and throw new IllegalArgumentException("Null strings are not supported"); here
+			elementIndices.add(null);
+		}
+		modificationCount++;
+		return e;
+	}
+
+	public boolean remove(Object o) {
+		for (Iterator<String> itr = this.iterator(); itr.hasNext(); ) {
+			String s = itr.next();
+			if ((s == null && o == null) || (s != null && s.equals(o))) {
+				itr.remove();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean removeAll(Collection<?> c) {
+		boolean changed = false;
+		for (Object o : c) {
+			changed |= remove(o);
+		}
+		return changed;
+	}
+
+	public boolean retainAll(Collection<?> c) {
+		boolean changed = false;
+		for (Iterator<String> itr = this.iterator(); itr.hasNext(); ) {
+			String s = itr.next();
+			if (!c.contains(s)) {
+				itr.remove();
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public int size() {
+		return elementIndices.size();
+	}
+
+	public Object[] toArray() {
+		return toArray(new Object[size()]);
+	}
+	
+	// TODO: Need to decide contract order
+	// String order: element[0] == First push, element[1] == second push, element[n] == last push
+	// E.G. iterating through array should give the toString() of the stack
+	// Stack order (as implemented): iterating the Array gives the iteration order of the stack
+	// which is the same as if repeatedly calling pop()
+	@SuppressWarnings("unchecked")
+	public <T> T[] toArray(T[] a) {
+		T[] array = a;
+		if (array.length < this.size()) {
+			array = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size());
+		}
+
+		int idx = 0;
+		for (String string : this) {
+			array[idx] = (T) string;
+			idx++;
+		}
+
+		if (array.length > this.size()) {
+			array[size()] = null;
+		}
+
+		return array;
+	}
+
+	@Override
+	public String toString() {
+		// This creates a new string each time. Might be worth caching it.
+		return elementBuffer.toString();
 	}
 	
 }
