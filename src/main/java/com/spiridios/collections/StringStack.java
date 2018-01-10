@@ -24,12 +24,16 @@ import java.util.NoSuchElementException;
 
 /**
  * StringStack is a stack optimized for working with Strings, especially the toString() operation.
- * You may want to use this when navigating tree-like structures such as XML, JSON, file systems, etc.
+ * You may want to use this when navigating tree-like structures such as XML, JSON, file systems, etc 
+ * to track and render your current path efficiently.
+ * 
+ * Null values and empty strings are allowed in the stack. The toString operation will render nothing in
+ * their place, but iterating or popping will return nulls and empty strings for their appropriate entries.
+ * 
  * @author Micah Lieske
  */
 public class StringStack implements Collection<String>, Serializable {
-	// TODO: Nulls allowed vs not allowed
-	// TODO: Element separator
+	// TODO: Element separator E.G. "/" for paths. Probably need LEADING, TAILING and SURROUND as options.
 
 	/**
 	 * Iterator that Returns elements in LIFO (stack) order.
@@ -165,6 +169,10 @@ public class StringStack implements Collection<String>, Serializable {
 	 * @return true if this collection changed as a result of the call
 	 */
 	public boolean addAll(Collection<? extends String> c) {
+		if (c == null) {
+			throw new NullPointerException("c cannot be null");
+		}
+
 		boolean changed = false;
 		for (String e : c) {
 			changed |= add(e);
@@ -179,9 +187,9 @@ public class StringStack implements Collection<String>, Serializable {
 	}
 
 	public boolean contains(Object o) {
-		String eToFind = (String) o; // will throw classcast if o is not string
+		String eToFind = (String) o; // will throw contract classcast if o is not string
 		for (String e : this) {
-			if ((e == null && o == null) || (e != null && e.equals(eToFind))) {
+			if ((o == null && e == null) || (e != null && e.equals(eToFind))) {
 				return true;
 			}
 		}
@@ -295,9 +303,6 @@ public class StringStack implements Collection<String>, Serializable {
 			elementIndices.add(elementBuffer.length());
 			elementBuffer.append(e);
 		} else {
-			// TODO: Null strings in the stack don't make a huge amount of sense.
-			// Make a subclass, NullableStringStack that allows nulls
-			// and throw new IllegalArgumentException("Null strings are not supported"); here
 			elementIndices.add(null);
 		}
 		modificationCount++;
@@ -307,7 +312,7 @@ public class StringStack implements Collection<String>, Serializable {
 	public boolean remove(Object o) {
 		for (Iterator<String> itr = this.iterator(); itr.hasNext(); ) {
 			String s = itr.next();
-			if ((s == null && o == null) || (s != null && s.equals(o))) {
+			if ((o == null && s == null) || (s != null && s.equals(o))) {
 				itr.remove();
 				return true;
 			}
@@ -316,6 +321,10 @@ public class StringStack implements Collection<String>, Serializable {
 	}
 
 	public boolean removeAll(Collection<?> c) {
+		if (c == null) {
+			throw new NullPointerException("c cannot be null");
+		}
+
 		boolean changed = false;
 		for (Object o : c) {
 			changed |= remove(o);
@@ -324,6 +333,10 @@ public class StringStack implements Collection<String>, Serializable {
 	}
 
 	public boolean retainAll(Collection<?> c) {
+		if (c == null) {
+			throw new NullPointerException("c cannot be null");
+		}
+
 		boolean changed = false;
 		for (Iterator<String> itr = this.iterator(); itr.hasNext(); ) {
 			String s = itr.next();
