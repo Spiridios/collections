@@ -22,8 +22,15 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * StringStack is a stack optimized for working with Strings, especially the toString() operation.
+ * You may want to use this when navigating tree-like structures such as XML, JSON, file systems, etc.
+ * @author Micah Lieske
+ */
 public class StringStack implements Collection<String>, Serializable {
 	private static final long serialVersionUID = -6797711532702199014L;
+	// TODO: Nulls allowed vs not allowed
+	// TODO: Element separator
 
 	/**
 	 * Count of modifications made to this Stack (for ConcurrentModdificationException purposes)
@@ -43,12 +50,12 @@ public class StringStack implements Collection<String>, Serializable {
 	/**
 	 * Returns elements in LIFO (stack) order. Repeatedly calling next() gives an equivalent order as if repeatedly calling pop();
 	 */
-	private class StringStackIterator implements Iterator<String> {
+	private class LIFOIterator implements Iterator<String> {
 		private int currentElementIndexIndex;
 		private int expectedModificationCount;
 		private boolean nextCalled = false;
 
-		private StringStackIterator() {
+		private LIFOIterator() {
 			this.expectedModificationCount = modificationCount;
 			this.currentElementIndexIndex = elementIndices.size();
 		}
@@ -117,20 +124,35 @@ public class StringStack implements Collection<String>, Serializable {
 		}
 	}
 
+	/**
+	 * Constructs and empty StringStack
+	 */
 	public StringStack() {
 		clear();
 	}
 	
-	public StringStack(StringStack ss) {
-		this.elementIndices = new ArrayList<Integer>(ss.elementIndices);
-		this.elementBuffer = new StringBuilder(ss.elementBuffer);
+	/**
+	 * Constructs a new StringStack that is a deep copy of the given StringStack
+	 * @param toCopy The StringStack to copy
+	 */
+	public StringStack(StringStack toCopy) {
+		this.elementIndices = new ArrayList<Integer>(toCopy.elementIndices);
+		this.elementBuffer = new StringBuilder(toCopy.elementBuffer);
 	}
 	
-	public StringStack(Collection<? extends String> c) {
+	/**
+	 * Constructs a new StringStack that contains the elements of the given collection.
+	 * This is equivalent to creating an empty StringStack and calling addAll(collection);
+	 * @param collection The Collection to copy
+	 */
+	public StringStack(Collection<? extends String> collection) {
 		this();
-		addAll(c);
+		addAll(collection);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public int size() {
 		return elementIndices.size();
 	}
@@ -149,12 +171,11 @@ public class StringStack implements Collection<String>, Serializable {
 		return false;
 	}
 
-	// TODO: Also provide FIFO ordered iterator?
 	/**
 	 * Returns items in LIFO order. The order is the same as repeatedly calling pop(), but the StringStack is not modified.
 	 */
 	public Iterator<String> iterator() {
-		return new StringStackIterator();
+		return new LIFOIterator();
 	}
 
 	public Object[] toArray() {
