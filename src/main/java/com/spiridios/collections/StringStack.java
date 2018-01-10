@@ -28,8 +28,12 @@ import java.util.NoSuchElementException;
  * @author Micah Lieske
  */
 public class StringStack implements Collection<String>, Serializable {
+	// TODO: Nulls allowed vs not allowed
+	// TODO: Element separator
+
 	/**
-	 * Returns elements in LIFO (stack) order. Repeatedly calling next() gives an equivalent order as if repeatedly calling pop();
+	 * Iterator that Returns elements in LIFO (stack) order.
+	 * Repeatedly calling next() gives an equivalent order as if repeatedly calling pop();
 	 */
 	private class LIFOIterator implements Iterator<String> {
 		private int currentElementIndexIndex;
@@ -106,8 +110,6 @@ public class StringStack implements Collection<String>, Serializable {
 	}
 
 	private static final long serialVersionUID = -6797711532702199014L;
-	// TODO: Nulls allowed vs not allowed
-	// TODO: Element separator
 	
 	/**
 	 * Count of modifications made to this Stack (for ConcurrentModdificationException purposes)
@@ -155,6 +157,13 @@ public class StringStack implements Collection<String>, Serializable {
 		return true;
 	}
 
+	/**
+	 * Adds all of the elements in the specified collection to this collection. Items are {@link StringStack#push pushed}
+	 * onto the stack in the specified collection's iterator order. This means the last item returned by specified collection's
+	 * iterator will be the first item returned from {@link StringStack#pop peek}/{@link StringStack#pop pop}.
+	 * @param c collection containing elements to be added to this collection
+	 * @return true if this collection changed as a result of the call
+	 */
 	public boolean addAll(Collection<? extends String> c) {
 		boolean changed = false;
 		for (String e : c) {
@@ -235,13 +244,18 @@ public class StringStack implements Collection<String>, Serializable {
 	}
 
 	/**
-	 * Returns items in LIFO order. The order is the same as repeatedly calling pop(), but the StringStack is not modified.
+	 * Returns items in LIFO order. The order returned is the same order as repeatedly calling {@link StringStack#pop pop}.
 	 */
 	public Iterator<String> iterator() {
 		return new LIFOIterator();
 	}
 
-	public String peek() {
+	/**
+	 * Returns the most recently added element of the Stack without removing it from the stack.
+	 * @return The most recently added element.
+	 * @throws NoSuchElementException when there aren't any elements to return.
+	 */
+	public String peek() throws NoSuchElementException {
 		if (isEmpty()) {
 			throw new NoSuchElementException(getClass().getName() + " is empty");
 		}
@@ -250,6 +264,11 @@ public class StringStack implements Collection<String>, Serializable {
 		return index == null ? null : elementBuffer.substring(index);
 	}
 
+	/**
+	 * Removes and returns the most recently added element of the Stack.
+	 * @return The most recently added element.
+	 * @throws NoSuchElementException when there aren't any elements to return.
+	 */
 	public String pop() throws NoSuchElementException {
 		if (isEmpty()) {
 			throw new NoSuchElementException(getClass().getName() + " is empty");
@@ -266,6 +285,11 @@ public class StringStack implements Collection<String>, Serializable {
 		}
 	}
 
+	/**
+	 * Adds an element to the stack.
+	 * @param e The element to add.
+	 * @return The element that was added.
+	 */
 	public String push(String e) {
 		if (e != null) {
 			elementIndices.add(elementBuffer.length());
@@ -311,9 +335,6 @@ public class StringStack implements Collection<String>, Serializable {
 		return changed;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public int size() {
 		return elementIndices.size();
 	}
