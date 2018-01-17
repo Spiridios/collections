@@ -10,6 +10,7 @@
   <name>collections</name>
   <description>Specialized collections and collection utils.</description>
   <url>http://github.com/spiridios/collections</url>
+
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
