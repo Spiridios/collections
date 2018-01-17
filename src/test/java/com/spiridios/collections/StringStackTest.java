@@ -20,7 +20,6 @@ import com.google.common.collect.testing.TestStringCollectionGenerator;
 import com.google.common.collect.testing.features.CollectionFeature;
 import com.google.common.collect.testing.features.CollectionSize;
 
-//import static org.junit.Assert.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Arrays;
